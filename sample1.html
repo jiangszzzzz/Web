@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>抽签程序</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #app {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #006dcc;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 5px 0;
+            font-size: 18px;
+        }
+
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.5s;
+        }
+
+        .fade-enter, .fade-leave-to {
+            opacity: 0;
+        }
+
+        .result-list {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .result-item {
+            background-color: #2b542c;
+            color: #fff;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 10px;
+        }
+
+        .container {
+            max-height: 300px; /* 设置最大高度 */
+            overflow-y: auto; /* 垂直滚动条 */
+        }
+        th {
+            text-align: center; /* 设置单元格内文本右对齐 */
+            padding: 8px; /* 设置单元格内边距 */
+            border: 1px solid #ddd; /* 设置单元格边框 */
+        }
+        td {
+            text-align: center; /* 设置单元格内文本右对齐 */
+            padding: 8px; /* 设置单元格内边距 */
+            border: 1px solid #ddd; /* 设置单元格边框 */
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <h1>抽签程序</h1>
+
+    <div>
+        <label for="range">输入抽签对象：</label>
+        <input v-model="inputData" >
+    </div>
+
+    <div>
+        <label for="range">输入数字范围：</label>
+        <input type="number" id="range" v-model="range">
+    </div>
+
+    <div>
+        <label for="count">输入抽签个数：</label>
+        <input type="number" id="count" v-model="count">
+    </div>
+
+    <button @click="drawLots">抽签</button>
+
+    <div>
+        <h2>抽签结果：</h2>
+        <transition name="fade">
+            <ul class="result-list" v-if="lots.length > 0">
+                <li class="result-item" v-for="lot in sortedLots" :key="lot">序号：{{ lot }}</li>
+            </ul>
+        </transition>
+    </div>
+
+
+    <div id="table-container" class="container">
+        <h3>抽签记录</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>序号</th>
+                <th>对象</th>
+                <th>抽取范围</th>
+                <th>抽签结果</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="tableData in tableData" :key="tableData.id">
+                <td>{{ tableData.column1 }}</td>
+                <td>{{ tableData.column2 }}</td>
+                <td>{{ tableData.column3 }}选{{ tableData.column4 }}</td>
+                <td>{{ tableData.column5 }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!--
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+-->
+<script src="../js/vue.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            range: 0,
+            count: 0,
+            lots: [],
+            inputData: '',
+            clickCount: 1,
+            tableData: []    // 用于存储表格数据
+        },
+        computed: {
+            sortedLots: function () {
+                return this.lots.sort((a, b) => a - b); // .slice() 保持原有lots 列表不变
+            }
+        },
+        methods: {
+            drawLots: function () {
+                this.lots = [];
+                let availableNumbers = Array.from({length: this.range}, (_, i) => i + 1);
+
+                for (let i = 0; i < this.count; i++) {
+                    const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+                    const lot = availableNumbers[randomIndex];
+                    this.lots.push(lot);
+                    availableNumbers.splice(randomIndex, 1);
+                }
+                // 将输入框数据和点击次数添加到表格中
+                //this.tableData.push(`||第${this.clickCount}次抽签 ||  ${this.inputData}||${this.range}选${this.count} ||抽签结果:序号 ${this.lots}`);
+
+                this.tableData.push({
+                    id: this.tableData.length + 1,
+                    column1: this.clickCount,
+                    column2: this.inputData,
+                    column3: this.range,
+                    column4: this.count,
+                    column5: this.lots,
+                });
+                this.$nextTick(() => {
+                    const tableContainer = document.getElementById('table-container');
+                    tableContainer.scrollTop = tableContainer.scrollHeight;
+                });
+                // 清空输入框
+                // this.inputData = '';
+                //this.count = 0;
+                //this.range = 0;
+                // 更新点击次数
+                this.clickCount++;
+            }
+        }
+    });
+</script>
+</body>
+</html>
